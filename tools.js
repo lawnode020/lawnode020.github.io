@@ -33,6 +33,12 @@ window.TOOLS = [
     icon: '<path d="M12 3l7 3v5c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 11.5l2 2 4-4.5"/>'
   },
   {
+    name: '交通事故赔偿计算器',
+    desc: '深圳 · 伤残／死亡 · 交强险与责任比例',
+    url: 'https://lawnode020.github.io/accident/',
+    icon: '<path d="M4 16.6v-3.1l1.7-4a2 2 0 0 1 1.85-1.2h8.9a2 2 0 0 1 1.85 1.2l1.7 4v3.1"/><path d="M4 16.6h16"/><circle cx="7.6" cy="16.6" r="1.5"/><circle cx="16.4" cy="16.6" r="1.5"/><path d="M5.9 13.2h12.2"/>'
+  },
+  {
     name: '工资计算器',
     desc: '五险一金 · 个税 · 到手工资',
     url: 'https://lawnode020.github.io/gongzi/',

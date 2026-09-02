@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>交通事故赔偿计算器</title>
-<meta name="description" content="交通事故人身损害及财产损失赔偿金额计算工具">
+<meta name="description" content="深圳地区道路交通事故人身损害及财产损失赔偿项目计算工具，含交强险、商业三者险与责任比例">
+<meta name="theme-color" content="#f5efe0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1a15" media="(prefers-color-scheme: dark)">
 
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -253,6 +255,52 @@
     .row-label { min-width: 100px; font-size: 14px; }
     .row-label.wide { min-width: 126px; }
   }
+
+  /* ── 附加样式 ── */
+  .row-sub { font-size: 12px; color: var(--text-tertiary); font-weight: 400; }
+  .row.stacked { flex-direction: column; align-items: stretch; gap: 8px; }
+  .row.stacked .row-value { justify-content: flex-start; }
+  .hint {
+    font-size: 12px; color: var(--text-tertiary);
+    padding: 8px 16px 12px; line-height: 1.6;
+    border-bottom: 1px solid var(--divider);
+  }
+  .hint:last-child { border-bottom: none; }
+  .hint b { color: var(--text-secondary); font-weight: 500; }
+  .basis-note {
+    font-size: 12px; color: var(--text-tertiary);
+    padding: 10px 16px; line-height: 1.6; border-top: 1px solid var(--divider);
+  }
+  .switch-row { display: flex; align-items: center; gap: 8px; }
+  .chk {
+    width: 20px; height: 20px; flex-shrink: 0; cursor: pointer;
+    accent-color: var(--accent); appearance: auto; -moz-appearance: auto;
+  }
+  .chk-label { font-size: 14px; color: var(--text-secondary); cursor: pointer; }
+  .result-item.strong .result-label { font-weight: 600; }
+  .result-item.strong .result-amount { font-weight: 600; }
+  .warn {
+    font-size: 12px; line-height: 1.6; color: var(--danger);
+    background: var(--danger-light); border: 1px solid var(--danger);
+    border-radius: 10px; padding: 10px 12px; margin-top: 8px;
+  }
+  .step-note {
+    font-size: 12px; color: var(--text-tertiary);
+    padding: 8px 16px; line-height: 1.6; border-bottom: 1px solid var(--divider);
+  }
+  .copy-btn {
+    width: 100%; padding: 12px; margin-top: 10px;
+    background: transparent; color: var(--accent-text);
+    border: 1px solid var(--accent); border-radius: 14px;
+    font-size: 15px; font-family: inherit; cursor: pointer;
+  }
+  .copy-btn:active { background: var(--accent-light); }
+  .disclaimer {
+    font-size: 12px; color: var(--text-tertiary); line-height: 1.7;
+    padding: 14px 16px; margin-top: 20px;
+    border: 1px dashed var(--card-border); border-radius: 14px;
+  }
+  .disclaimer b { color: var(--text-secondary); }
 </style>
 </head>
 <body>
@@ -274,102 +322,88 @@
         <span class="row-label">案件性质</span>
         <div class="row-value">
           <div class="seg" id="caseTypeSeg">
-            <button class="seg-btn active" data-val="injury">人身伤害</button>
+            <button class="seg-btn active" data-val="injury">伤残 / 受伤</button>
             <button class="seg-btn" data-val="death">死亡</button>
           </div>
         </div>
       </div>
       <div class="row">
-        <span class="row-label">受害人户籍</span>
-        <div class="row-value">
-          <div class="seg" id="residenceSeg">
-            <button class="seg-btn active" data-val="urban">城镇</button>
-            <button class="seg-btn" data-val="rural">农村</button>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <span class="row-label">受害人年龄</span>
+        <span class="row-label" id="ageLabel">定残时年龄<br><span class="row-sub">未定残按受伤时年龄</span></span>
         <div class="row-value">
           <input type="number" id="victimAge" value="35" min="0" max="120">
           <span class="unit">岁</span>
         </div>
       </div>
-      <div class="row" id="incomeRow">
-        <span class="row-label">受害人月收入</span>
+      <div class="row">
+        <span class="row-label">受害人月收入<br><span class="row-sub">有固定收入的填写</span></span>
         <div class="row-value">
           <input type="number" id="monthlyIncome" value="" placeholder="无固定收入留空" min="0">
           <span class="unit">元</span>
         </div>
+      </div>
+      <div class="hint">
+        法释〔2022〕14号已<b>统一城乡赔偿标准</b>，残疾赔偿金、死亡赔偿金一律按城镇居民人均可支配收入计算，不再区分户籍。
       </div>
     </div>
   </div>
 
   <!-- 统计基准数据 -->
   <div class="section">
-    <div class="section-title">统计基准数据（广东省）</div>
+    <div class="section-title">计算基准数据</div>
     <div class="card">
       <div class="collapse-header" id="statsHeader">
-        <span class="label" id="statsLabel">2025年广东省数据</span>
+        <span class="label" id="statsLabel">2025年度广东省数据（2026年适用）</span>
         <span class="collapse-icon" id="statsIcon">›</span>
       </div>
       <div class="collapse-body" id="statsBody">
         <div class="row">
-          <span class="row-label">数据年份</span>
+          <span class="row-label">数据年度</span>
           <div class="row-value">
             <div class="seg" id="statsYearSeg">
-              <button class="seg-btn" data-val="2023">2023</button>
               <button class="seg-btn" data-val="2024">2024</button>
               <button class="seg-btn active" data-val="2025">2025</button>
             </div>
           </div>
         </div>
-        <div class="row" id="statsNoteRow" style="display:none">
-          <span class="row-label" style="color:var(--accent-text);font-size:13px">⚠ 2025年数据待核实</span>
-          <div class="row-value" style="font-size:12px;color:var(--text-secondary);text-align:right">以2024年为基准，<br>请对照官方公告更新</div>
-        </div>
         <div class="row">
-          <span class="row-label">城镇居民人均<br>可支配收入</span>
+          <span class="row-label wide">城镇居民人均<br>可支配收入<br><span class="row-sub">残疾／死亡赔偿金基数</span></span>
           <div class="row-value">
             <input type="number" id="urbanIncome" value="" min="0">
             <span class="unit">元/年</span>
           </div>
         </div>
         <div class="row">
-          <span class="row-label">农村居民人均<br>可支配收入</span>
-          <div class="row-value">
-            <input type="number" id="ruralIncome" value="" min="0">
-            <span class="unit">元/年</span>
-          </div>
-        </div>
-        <div class="row">
-          <span class="row-label">城镇居民人均<br>消费支出</span>
+          <span class="row-label wide">城镇居民人均<br>消费支出<br><span class="row-sub">被扶养人生活费基数</span></span>
           <div class="row-value">
             <input type="number" id="urbanConsumption" value="" min="0">
             <span class="unit">元/年</span>
           </div>
         </div>
         <div class="row">
-          <span class="row-label">农村居民人均<br>消费支出</span>
+          <span class="row-label wide">在岗职工<br>年平均工资<br><span class="row-sub">丧葬费／定残后护理费基数</span></span>
           <div class="row-value">
-            <input type="number" id="ruralConsumption" value="" min="0">
+            <input type="number" id="staffWage" value="" min="0">
             <span class="unit">元/年</span>
           </div>
         </div>
         <div class="row">
-          <span class="row-label wide">上年职工日均工资<br><span style="font-size:12px;color:var(--text-tertiary)">用于护理费参考</span></span>
+          <span class="row-label wide">城镇私营单位<br>年平均工资<br><span class="row-sub">无固定收入误工费参照</span></span>
           <div class="row-value">
-            <input type="number" id="dailyWage" value="" min="0">
-            <span class="unit">元/天</span>
+            <input type="number" id="privateWage" value="" min="0">
+            <span class="unit">元/年</span>
           </div>
+        </div>
+        <div class="basis-note">
+          深圳两级法院审理道路交通事故案件，统一适用<b>广东省</b>（非深圳市）统计数据，
+          以<b>一审法庭辩论终结时</b>已公布的最新年度数据为准。上表数据可手动修改。
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 医疗费用 -->
+  <!-- 医疗及住院 -->
   <div class="section">
-    <div class="section-title">医疗及康复费用</div>
+    <div class="section-title">医疗及住院费用</div>
     <div class="card">
       <div class="row">
         <span class="row-label">医疗费</span>
@@ -379,24 +413,19 @@
         </div>
       </div>
       <div class="row">
-        <span class="row-label">后续治疗费</span>
+        <span class="row-label">后续治疗费<br><span class="row-sub">含康复费、整容费</span></span>
         <div class="row-value">
           <input type="number" id="futureMedical" value="" placeholder="0" min="0">
           <span class="unit">元</span>
         </div>
       </div>
       <div class="row">
-        <span class="row-label">住院天数</span>
+        <span class="row-label">住院伙食补助费</span>
         <div class="row-value">
-          <input type="number" id="hospitalDays" value="" placeholder="0" min="0">
-          <span class="unit">天</span>
-        </div>
-      </div>
-      <div class="row">
-        <span class="row-label">住院伙食补助</span>
-        <div class="row-value">
-          <input type="number" id="mealSubsidy" value="100" min="0">
-          <span class="unit">元/天</span>
+          <input type="number" id="hospitalDays" value="" placeholder="天数" min="0" style="max-width:70px">
+          <span class="unit">天 ×</span>
+          <input type="number" id="mealSubsidy" value="100" min="0" style="max-width:60px">
+          <span class="unit">元</span>
         </div>
       </div>
       <div class="row">
@@ -404,31 +433,8 @@
         <div class="row-value">
           <input type="number" id="nutritionDays" value="" placeholder="天数" min="0" style="max-width:70px">
           <span class="unit">天 ×</span>
-          <input type="number" id="nutritionRate" value="30" min="0" style="max-width:56px">
+          <input type="number" id="nutritionRate" value="50" min="0" style="max-width:60px">
           <span class="unit">元</span>
-        </div>
-      </div>
-      <div class="row">
-        <span class="row-label">护理天数</span>
-        <div class="row-value">
-          <input type="number" id="nursingDays" value="" placeholder="0" min="0">
-          <span class="unit">天</span>
-        </div>
-      </div>
-      <div class="row">
-        <span class="row-label">护理费标准</span>
-        <div class="row-value">
-          <div class="seg" id="nursingTypeSeg">
-            <button class="seg-btn active" data-val="refer">参照日均工资</button>
-            <button class="seg-btn" data-val="custom">自定义</button>
-          </div>
-        </div>
-      </div>
-      <div class="row" id="nursingCustomRow" style="display:none">
-        <span class="row-label">护理费标准</span>
-        <div class="row-value">
-          <input type="number" id="nursingRate" value="" placeholder="元/天" min="0">
-          <span class="unit">元/天</span>
         </div>
       </div>
       <div class="row">
@@ -438,6 +444,58 @@
           <span class="unit">元</span>
         </div>
       </div>
+      <div class="hint">
+        深圳：住院伙食补助费按 <b>100 元/天</b>；营养费依伤情并参照医疗机构意见，实务多在 <b>30–50 元/天</b>。
+      </div>
+    </div>
+  </div>
+
+  <!-- 护理费 -->
+  <div class="section">
+    <div class="section-title">护理费</div>
+    <div class="card">
+      <div class="row">
+        <span class="row-label">住院护理</span>
+        <div class="row-value">
+          <input type="number" id="nurseInDays" value="" placeholder="天数" min="0" style="max-width:64px">
+          <span class="unit">天 ×</span>
+          <input type="number" id="nurseInCount" value="1" min="1" style="max-width:40px">
+          <span class="unit">人 ×</span>
+          <input type="number" id="nurseInRate" value="150" min="0" style="max-width:56px">
+          <span class="unit">元</span>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-label">院外护理<br><span class="row-sub">须有医嘱</span></span>
+        <div class="row-value">
+          <input type="number" id="nurseOutDays" value="" placeholder="天数" min="0" style="max-width:70px">
+          <span class="unit">天 ×</span>
+          <input type="number" id="nurseOutRate" value="120" min="0" style="max-width:60px">
+          <span class="unit">元</span>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-label">定残后护理<br><span class="row-sub">依赖程度</span></span>
+        <div class="row-value">
+          <select id="afterCareLevel">
+            <option value="0">无</option>
+            <option value="0.5">完全不能自理（50%）</option>
+            <option value="0.4">大部分不能自理（40%）</option>
+            <option value="0.3">部分不能自理（30%）</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" id="afterCareYearsRow" style="display:none">
+        <span class="row-label">护理年限</span>
+        <div class="row-value">
+          <input type="number" id="afterCareYears" value="20" min="0" max="20">
+          <span class="unit">年</span>
+        </div>
+      </div>
+      <div class="hint">
+        深圳裁判指引：住院护理 <b>150 元/天/人</b>，出院后凭医嘱护理 <b>120 元/天</b>；
+        定残后护理费参照《工伤保险条例》，按在岗职工年平均工资的 <b>50%／40%／30%</b> 计付，最长不超过二十年。
+      </div>
     </div>
   </div>
 
@@ -446,18 +504,18 @@
     <div class="section-title">误工费</div>
     <div class="card">
       <div class="row">
-        <span class="row-label">误工天数</span>
+        <span class="row-label">误工天数<br><span class="row-sub">至定残日前一天</span></span>
         <div class="row-value">
           <input type="number" id="lostWorkDays" value="" placeholder="0" min="0">
           <span class="unit">天</span>
         </div>
       </div>
-      <div class="row">
+      <div class="row stacked">
         <span class="row-label">日收入标准</span>
         <div class="row-value">
-          <div class="seg" id="lostWorkTypeSeg">
-            <button class="seg-btn active" data-val="monthly">按月收入</button>
-            <button class="seg-btn" data-val="refer">参照日均工资</button>
+          <div class="seg" id="lostWorkTypeSeg" style="flex:1">
+            <button class="seg-btn active" data-val="monthly">月收入÷30</button>
+            <button class="seg-btn" data-val="refer">私营单位平均工资</button>
             <button class="seg-btn" data-val="custom">自定义</button>
           </div>
         </div>
@@ -469,12 +527,16 @@
           <span class="unit">元/天</span>
         </div>
       </div>
+      <div class="hint">
+        有固定收入的按<b>实际减少的收入</b>计算；无固定收入又不能举证近三年平均收入的，
+        参照上一年度城镇私营单位就业人员年平均工资 ÷ 365 天计算。
+      </div>
     </div>
   </div>
 
   <!-- 伤残赔偿 -->
   <div class="section" id="disabilitySection">
-    <div class="section-title">伤残赔偿</div>
+    <div class="section-title">残疾赔偿金</div>
     <div class="card">
       <div class="row">
         <span class="row-label">伤残等级</span>
@@ -494,17 +556,21 @@
           </select>
         </div>
       </div>
-      <!-- 多处伤残 -->
       <div id="extraDisabilityArea"></div>
       <div class="add-row" id="addDisabilityBtn" style="display:none">
         <span>＋ 添加其他伤残等级</span>
       </div>
-      <div class="row">
-        <span class="row-label">精神损害<br>抚慰金</span>
+      <div class="row" id="spiritualRow">
+        <span class="row-label">精神损害抚慰金</span>
         <div class="row-value">
-          <input type="number" id="spiritualDamage" value="" placeholder="可不填" min="0">
+          <input type="number" id="spiritualDamage" value="" placeholder="0" min="0">
           <span class="unit">元</span>
         </div>
+      </div>
+      <div class="hint">
+        多处伤残按<b>伤残赔偿指数</b>计算：以最高等级指数为基数，其余每一处按其等级指数的 10% 作为附加指数，
+        附加指数合计不超过 10%，总指数不超过 100%。
+        精神损害抚慰金按深圳裁判指引自动带出（一级 10 万元，每降一级减 1 万元），可手动调整。
       </div>
     </div>
   </div>
@@ -513,25 +579,28 @@
   <div class="section" id="deathSection" style="display:none">
     <div class="section-title">死亡赔偿</div>
     <div class="card">
-      <div class="row" id="deathYearsRow">
+      <div class="row">
         <span class="row-label">赔偿年限</span>
         <div class="row-value" id="deathYearsDisplay" style="color:var(--text-secondary);font-size:14px;">
-          20年（自动计算）
+          20 年（按年龄自动计算）
         </div>
       </div>
       <div class="row">
-        <span class="row-label">丧葬费</span>
+        <span class="row-label">丧葬费<br><span class="row-sub">月平均工资 × 6 个月</span></span>
         <div class="row-value">
-          <input type="number" id="funeralFee" value="" placeholder="0" min="0">
+          <input type="number" id="funeralFee" value="" min="0">
           <span class="unit">元</span>
         </div>
       </div>
       <div class="row">
-        <span class="row-label">精神损害<br>抚慰金</span>
+        <span class="row-label">精神损害抚慰金</span>
         <div class="row-value">
-          <input type="number" id="spiritualDamageDeath" value="" placeholder="可不填" min="0">
+          <input type="number" id="spiritualDamageDeath" value="100000" min="0">
           <span class="unit">元</span>
         </div>
+      </div>
+      <div class="hint">
+        死亡案件精神损害抚慰金，深圳裁判指引为 <b>10 万元</b>。
       </div>
     </div>
   </div>
@@ -544,12 +613,18 @@
       <div class="add-row" id="addDependentBtn">
         <span>＋ 添加被扶养人</span>
       </div>
+      <div class="hint">
+        被扶养人为未成年人的计算至十八周岁；为无劳动能力又无其他生活来源的成年近亲属的，按二十年计算，
+        但六十周岁以上的年龄每增加一岁减少一年，七十五周岁以上的按五年计算。
+        被扶养人有数人的，<b>年赔偿总额累计不超过上一年度城镇居民人均消费支出额</b>（本计算器按年度逐年封顶）。
+        伤残案件中，被扶养人生活费同样乘以伤残赔偿指数。
+      </div>
     </div>
   </div>
 
   <!-- 其他费用 -->
   <div class="section">
-    <div class="section-title">其他费用</div>
+    <div class="section-title">其他费用及财产损失</div>
     <div class="card">
       <div class="row">
         <span class="row-label">交通费</span>
@@ -566,11 +641,29 @@
         </div>
       </div>
       <div class="row">
-        <span class="row-label">财产损失</span>
+        <span class="row-label">鉴定费</span>
+        <div class="row-value">
+          <input type="number" id="appraisalFee" value="" placeholder="0" min="0">
+          <span class="unit">元</span>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-label">车辆维修及<br>施救费</span>
+        <div class="row-value">
+          <input type="number" id="repairFee" value="" placeholder="0" min="0">
+          <span class="unit">元</span>
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-label">其他财产损失<br><span class="row-sub">停运损失、随车物品等</span></span>
         <div class="row-value">
           <input type="number" id="propertyLoss" value="" placeholder="0" min="0">
           <span class="unit">元</span>
         </div>
+      </div>
+      <div class="hint">
+        鉴定费属诉讼费用，一般由败诉方或按责任比例负担，<b>不属于交强险赔偿范围</b>，本计算器单列，不进入保险赔付。
+        车辆贬值损失原则上不予支持。
       </div>
     </div>
   </div>
@@ -580,7 +673,7 @@
     <div class="section-title">责任比例与保险</div>
     <div class="card">
       <div class="row">
-        <span class="row-label">被告责任比例</span>
+        <span class="row-label">侵权方责任比例</span>
         <div class="row-value">
           <input type="number" id="liabilityRatio" value="100" min="0" max="100">
           <span class="unit">%</span>
@@ -605,74 +698,112 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <span class="row-label">交强险份数<br><span class="row-sub">多车事故限额叠加</span></span>
+          <div class="row-value">
+            <input type="number" id="ctplCount" value="1" min="1" max="10">
+            <span class="unit">份</span>
+          </div>
+        </div>
       </div>
       <div class="row">
         <span class="row-label">商业三者险额度</span>
         <div class="row-value">
-          <input type="number" id="commercialInsLimit" value="" placeholder="0（无则留空）" min="0">
+          <input type="number" id="commercialInsLimit" value="" placeholder="无则留空" min="0">
           <span class="unit">元</span>
         </div>
+      </div>
+      <div class="row">
+        <div class="switch-row">
+          <input type="checkbox" id="commercialCoversSpiritual" class="chk">
+          <label for="commercialCoversSpiritual" class="chk-label">商业险赔偿精神损害抚慰金（已投保精神损害赔偿险）</label>
+        </div>
+      </div>
+      <div class="hint">
+        交强险在<b>责任限额内不区分责任比例</b>先行全额赔付；超出交强险的部分再按责任比例确定侵权方份额，
+        由商业三者险在保险额度内赔付，不足部分由侵权人自行承担。
       </div>
     </div>
   </div>
 
-  <!-- 计算按钮 -->
   <button class="calc-btn" id="calcBtn">计算赔偿总额</button>
 
   <!-- 结果 -->
   <div class="result-section" id="resultSection">
 
-    <div class="result-title" style="margin-top:24px">赔偿项目明细</div>
+    <div class="result-title" style="margin-top:24px">一、赔偿项目明细（全额损失）</div>
     <div class="card" id="resultDetail"></div>
 
-    <div class="result-title" style="margin-top:16px">保险及被告承担</div>
-    <div class="card" id="resultInsurance"></div>
+    <div class="result-title" style="margin-top:16px">二、交强险赔付</div>
+    <div class="card" id="resultCtpl"></div>
+
+    <div class="result-title" style="margin-top:16px">三、责任比例分担与商业险</div>
+    <div class="card" id="resultSplit"></div>
 
     <div class="final-claim" id="resultFinal"></div>
 
-    <p class="note">
-      注：本计算器仅供参考，计算结果基于输入数据及法定标准，不代表法院最终判决金额。
-      死亡赔偿金/残疾赔偿金适用城镇标准须结合受害人在城镇生活、工作等实际情形。
-    </p>
+    <button class="copy-btn" id="copyBtn">复制计算清单</button>
+
+    <div class="disclaimer">
+      <b>免责说明：</b>本工具仅为赔偿项目及金额的<b>初步测算</b>，不构成法律意见。
+      实际判赔金额取决于证据、伤情鉴定、责任认定、保险条款及法官自由裁量。
+      各项标准以一审法庭辩论终结时官方公布的最新数据为准，使用前请核对页面"计算基准数据"。
+    </div>
   </div>
 
 </div><!-- .container -->
 
 <script>
-// ── 历年广东省统计数据 ──
+/* ─────────────────────────────────────────────────────────
+ * 交通事故赔偿计算器（深圳）
+ * 法律依据：
+ *   《民法典》第一千一百七十九条、第一千一百八十条
+ *   《最高人民法院关于审理人身损害赔偿案件适用法律若干问题的解释》
+ *     （法释〔2022〕14号，已统一城乡赔偿标准）
+ *   《最高人民法院关于审理道路交通事故损害赔偿案件适用法律若干问题的解释》
+ *     （法释〔2020〕17号）
+ *   《机动车交通事故责任强制保险条例》及交强险条款（2020.9.19 起限额）
+ *   深圳市中级人民法院《关于道路交通事故损害赔偿纠纷案件的裁判指引》
+ * 数据口径：深圳两级法院统一适用广东省统计数据。
+ * ───────────────────────────────────────────────────────── */
+
+// ── 历年广东省统计数据（第 N 年数据用于第 N+1 年一审辩论终结的案件）──
 const YEARLY_STATS = {
-  2023: { urbanIncome: 52868, ruralIncome: 24012, urbanConsumption: 41516, ruralConsumption: 18777, dailyWage: 309 },
-  2024: { urbanIncome: 57698, ruralIncome: 26195, urbanConsumption: 44490, ruralConsumption: 21048, dailyWage: 340 },
-  // 2025年数据尚未内置，以2024年为基准，用户可手动更新
+  2024: { urbanIncome: 61629, urbanConsumption: 41055, staffWage: 137468, privateWage: 80976 },
+  2025: { urbanIncome: 63974, urbanConsumption: 42726, staffWage: 145651, privateWage: 83930 }
 };
+const DEFAULT_YEAR = 2025;
 
-// 默认使用最新已知年份的数据
-const DEFAULT_STATS = YEARLY_STATS[2024];
-
-// ── 交强险限额 ──
+// ── 交强险责任限额（单份）──
 const CTPL = {
   liable:     { death: 180000, medical: 18000, property: 2000 },
   not_liable: { death: 18000,  medical: 1800,  property: 100 }
 };
 
-// ── 伤残系数 ──
+// ── 伤残赔偿指数 ──
 const DIS_COEF = { 1:1.0, 2:0.9, 3:0.8, 4:0.7, 5:0.6, 6:0.5, 7:0.4, 8:0.3, 9:0.2, 10:0.1 };
+const LEVEL_CN = { 1:'一', 2:'二', 3:'三', 4:'四', 5:'五', 6:'六', 7:'七', 8:'八', 9:'九', 10:'十' };
 
 // ── 状态 ──
-let caseType = 'injury';       // injury | death
-let residence = 'urban';       // urban | rural
-let nursingType = 'refer';     // refer | custom
-let lostWorkType = 'monthly';  // monthly | refer | custom
+let caseType = 'injury';
+let lostWorkType = 'monthly';
 let ctplHas = true;
-let ctplLiability = 'liable';  // liable | not_liable
-let extraDisabilities = [];    // [{id, level}]
-let dependents = [];           // [{id, type, age, guardians}]
+let ctplLiability = 'liable';
+let extraDisabilities = [];
+let dependents = [];
 let depIdCounter = 0;
 let disIdCounter = 0;
+let funeralTouched = false;
+let spiritualTouched = false;
+let lastSummary = '';
 
-// ── Segment helpers ──
+function $(id) { return document.getElementById(id); }
+function g(id) { return parseFloat($(id).value) || 0; }
+function gi(id) { return parseInt($(id).value) || 0; }
+
+// ── Segment 控件 ──
 function initSeg(id, cb) {
-  const seg = document.getElementById(id);
+  const seg = $(id);
   seg.querySelectorAll('.seg-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       seg.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
@@ -684,92 +815,89 @@ function initSeg(id, cb) {
 
 initSeg('caseTypeSeg', val => {
   caseType = val;
-  document.getElementById('disabilitySection').style.display = val === 'injury' ? '' : 'none';
-  document.getElementById('deathSection').style.display = val === 'death' ? '' : 'none';
-  updateDeathYears();
-});
-
-initSeg('residenceSeg', val => { residence = val; updateDeathYears(); });
-
-initSeg('nursingTypeSeg', val => {
-  nursingType = val;
-  document.getElementById('nursingCustomRow').style.display = val === 'custom' ? '' : 'none';
+  $('disabilitySection').style.display = val === 'injury' ? '' : 'none';
+  $('deathSection').style.display = val === 'death' ? '' : 'none';
+  $('ageLabel').innerHTML = val === 'injury'
+    ? '定残时年龄<br><span class="row-sub">未定残按受伤时年龄</span>'
+    : '死亡时年龄';
+  updateYearsDisplay();
 });
 
 initSeg('lostWorkTypeSeg', val => {
   lostWorkType = val;
-  document.getElementById('lostWorkCustomRow').style.display = val === 'custom' ? '' : 'none';
+  $('lostWorkCustomRow').style.display = val === 'custom' ? '' : 'none';
 });
 
 initSeg('ctplSeg', val => {
   ctplHas = val === 'yes';
-  document.getElementById('ctplOptions').style.display = ctplHas ? '' : 'none';
+  $('ctplOptions').style.display = ctplHas ? '' : 'none';
 });
 
 initSeg('ctplLiabilitySeg', val => { ctplLiability = val; });
 
-// ── 年份选择器 ──
+// ── 基准数据年份 ──
 function applyStatsYear(year) {
-  const data = YEARLY_STATS[year] || YEARLY_STATS[2024];
-  document.getElementById('urbanIncome').value = data.urbanIncome;
-  document.getElementById('ruralIncome').value = data.ruralIncome;
-  document.getElementById('urbanConsumption').value = data.urbanConsumption;
-  document.getElementById('ruralConsumption').value = data.ruralConsumption;
-  document.getElementById('dailyWage').value = data.dailyWage;
-  document.getElementById('statsLabel').textContent = `${year}年广东省数据`;
-  document.getElementById('statsNoteRow').style.display = YEARLY_STATS[year] ? 'none' : '';
+  const d = YEARLY_STATS[year] || YEARLY_STATS[DEFAULT_YEAR];
+  $('urbanIncome').value = d.urbanIncome;
+  $('urbanConsumption').value = d.urbanConsumption;
+  $('staffWage').value = d.staffWage;
+  $('privateWage').value = d.privateWage;
+  $('statsLabel').textContent = year + '年度广东省数据（' + (year + 1) + '年适用）';
+  if (!funeralTouched) autoFuneral();
 }
 initSeg('statsYearSeg', val => applyStatsYear(parseInt(val)));
-// 页面初始化时应用默认年份（2025）
-applyStatsYear(2025);
 
-// ── 统计数据折叠 ──
-document.getElementById('statsHeader').addEventListener('click', () => {
-  const body = document.getElementById('statsBody');
-  const icon = document.getElementById('statsIcon');
-  body.classList.toggle('open');
-  icon.classList.toggle('open');
+$('statsHeader').addEventListener('click', () => {
+  $('statsBody').classList.toggle('open');
+  $('statsIcon').classList.toggle('open');
 });
 
-// ── 伤残等级主选择 ──
-document.getElementById('disabilityLevel').addEventListener('change', function() {
-  const btn = document.getElementById('addDisabilityBtn');
-  btn.style.display = this.value !== '0' ? '' : 'none';
-  if (this.value === '0') {
-    extraDisabilities = [];
-    renderExtraDisabilities();
-  }
+// ── 丧葬费自动带出：职工月平均工资 × 6 个月 ──
+function autoFuneral() {
+  $('funeralFee').value = Math.round(g('staffWage') / 12 * 6 * 100) / 100;
+}
+$('funeralFee').addEventListener('input', () => { funeralTouched = true; });
+$('staffWage').addEventListener('input', () => { if (!funeralTouched) autoFuneral(); });
+
+// ── 精神损害抚慰金自动带出（深圳指引：一级 10 万，每降一级减 1 万）──
+function autoSpiritual() {
+  const lv = parseInt($('disabilityLevel').value) || 0;
+  $('spiritualDamage').value = lv > 0 ? (11 - lv) * 10000 : '';
+}
+$('spiritualDamage').addEventListener('input', () => { spiritualTouched = true; });
+
+// ── 伤残等级 ──
+$('disabilityLevel').addEventListener('change', function () {
+  $('addDisabilityBtn').style.display = this.value !== '0' ? '' : 'none';
+  if (this.value === '0') { extraDisabilities = []; renderExtraDisabilities(); }
+  if (!spiritualTouched) autoSpiritual();
 });
 
-document.getElementById('addDisabilityBtn').addEventListener('click', () => {
+$('addDisabilityBtn').addEventListener('click', () => {
   disIdCounter++;
   extraDisabilities.push({ id: disIdCounter, level: 10 });
   renderExtraDisabilities();
 });
 
 function renderExtraDisabilities() {
-  const area = document.getElementById('extraDisabilityArea');
+  const area = $('extraDisabilityArea');
   area.innerHTML = '';
   extraDisabilities.forEach((d, idx) => {
     const div = document.createElement('div');
     div.className = 'dep-item';
-    div.innerHTML = `
-      <div class="dep-header">
-        <span class="dep-title">附加伤残 ${idx + 1}</span>
-        <span class="remove-btn" data-id="${d.id}">删除</span>
-      </div>
-      <div class="dep-rows">
-        <div class="dep-row">
-          <span class="row-label">伤残等级</span>
-          <div class="row-value">
-            <select data-id="${d.id}" class="extra-dis-select">
-              ${[10,9,8,7,6,5,4,3,2,1].map(l =>
-                `<option value="${l}" ${d.level==l?'selected':''}>${l === 1 ? '一' : l === 2 ? '二' : l === 3 ? '三' : l === 4 ? '四' : l === 5 ? '五' : l === 6 ? '六' : l === 7 ? '七' : l === 8 ? '八' : l === 9 ? '九' : '十'}级（${DIS_COEF[l]*100}%）</option>`
-              ).join('')}
-            </select>
-          </div>
-        </div>
-      </div>`;
+    div.innerHTML =
+      '<div class="dep-header">' +
+        '<span class="dep-title">附加伤残 ' + (idx + 1) + '</span>' +
+        '<span class="remove-btn" data-id="' + d.id + '">删除</span>' +
+      '</div>' +
+      '<div class="dep-rows"><div class="dep-row">' +
+        '<span class="row-label">伤残等级</span>' +
+        '<div class="row-value"><select data-id="' + d.id + '" class="extra-dis-select">' +
+          [10,9,8,7,6,5,4,3,2,1].map(l =>
+            '<option value="' + l + '"' + (d.level == l ? ' selected' : '') + '>' +
+            LEVEL_CN[l] + '级（' + (DIS_COEF[l] * 100) + '%）</option>').join('') +
+        '</select></div>' +
+      '</div></div>';
     area.appendChild(div);
     div.querySelector('.remove-btn').addEventListener('click', e => {
       const rid = parseInt(e.target.dataset.id);
@@ -784,49 +912,48 @@ function renderExtraDisabilities() {
   });
 }
 
+// ── 定残后护理费 ──
+$('afterCareLevel').addEventListener('change', function () {
+  $('afterCareYearsRow').style.display = this.value !== '0' ? '' : 'none';
+});
+
 // ── 被扶养人 ──
-document.getElementById('addDependentBtn').addEventListener('click', () => {
+$('addDependentBtn').addEventListener('click', () => {
   depIdCounter++;
-  dependents.push({ id: depIdCounter, type: 'minor', age: 10, guardians: 0 });
+  dependents.push({ id: depIdCounter, type: 'minor', age: 10, supporters: 1 });
   renderDependents();
 });
 
 function renderDependents() {
-  const list = document.getElementById('dependentList');
+  const list = $('dependentList');
   list.innerHTML = '';
   dependents.forEach((d, idx) => {
     const div = document.createElement('div');
     div.className = 'dep-item';
-    div.innerHTML = `
-      <div class="dep-header">
-        <span class="dep-title">被扶养人 ${idx + 1}</span>
-        <span class="remove-btn" data-id="${d.id}">删除</span>
-      </div>
-      <div class="dep-rows">
-        <div class="dep-row">
-          <span class="row-label">类型</span>
-          <div class="row-value">
-            <div class="seg" style="flex:1">
-              <button class="seg-btn dep-type-btn ${d.type==='minor'?'active':''}" data-id="${d.id}" data-val="minor">未成年</button>
-              <button class="seg-btn dep-type-btn ${d.type==='disabled'?'active':''}" data-id="${d.id}" data-val="disabled">无劳动能力</button>
-            </div>
-          </div>
-        </div>
-        <div class="dep-row">
-          <span class="row-label">${d.type === 'minor' ? '现年龄' : '年龄'}</span>
-          <div class="row-value">
-            <input type="number" class="dep-age-input" data-id="${d.id}" value="${d.age}" min="0" max="120">
-            <span class="unit">岁</span>
-          </div>
-        </div>
-        <div class="dep-row">
-          <span class="row-label">其他抚养人数</span>
-          <div class="row-value">
-            <input type="number" class="dep-guardians-input" data-id="${d.id}" value="${d.guardians}" min="0">
-            <span class="unit">人</span>
-          </div>
-        </div>
-      </div>`;
+    div.innerHTML =
+      '<div class="dep-header">' +
+        '<span class="dep-title">被扶养人 ' + (idx + 1) + '</span>' +
+        '<span class="remove-btn" data-id="' + d.id + '">删除</span>' +
+      '</div>' +
+      '<div class="dep-rows">' +
+        '<div class="dep-row"><span class="row-label">类型</span><div class="row-value">' +
+          '<div class="seg" style="flex:1">' +
+            '<button class="seg-btn dep-type-btn' + (d.type === 'minor' ? ' active' : '') + '" data-id="' + d.id + '" data-val="minor">未成年</button>' +
+            '<button class="seg-btn dep-type-btn' + (d.type === 'adult' ? ' active' : '') + '" data-id="' + d.id + '" data-val="adult">无劳动能力</button>' +
+          '</div>' +
+        '</div></div>' +
+        '<div class="dep-row"><span class="row-label">年龄</span><div class="row-value">' +
+          '<input type="number" class="dep-age-input" data-id="' + d.id + '" value="' + d.age + '" min="0" max="120">' +
+          '<span class="unit">岁</span>' +
+        '</div></div>' +
+        '<div class="dep-row"><span class="row-label">扶养人总数<br><span class="row-sub">含受害人在内</span></span><div class="row-value">' +
+          '<input type="number" class="dep-sup-input" data-id="' + d.id + '" value="' + d.supporters + '" min="1">' +
+          '<span class="unit">人</span>' +
+        '</div></div>' +
+        '<div class="dep-row"><span class="row-label">扶养年限</span>' +
+          '<div class="row-value dep-years" data-id="' + d.id + '" style="color:var(--text-secondary);font-size:14px">' + depYears(d) + ' 年</div>' +
+        '</div>' +
+      '</div>';
     list.appendChild(div);
 
     div.querySelector('.remove-btn').addEventListener('click', e => {
@@ -842,278 +969,314 @@ function renderDependents() {
         renderDependents();
       });
     });
-    div.querySelector('.dep-age-input').addEventListener('change', e => {
+    div.querySelector('.dep-age-input').addEventListener('input', e => {
       const rid = parseInt(e.target.dataset.id);
       const entry = dependents.find(x => x.id === rid);
-      if (entry) entry.age = parseInt(e.target.value) || 0;
+      if (!entry) return;
+      entry.age = parseInt(e.target.value) || 0;
+      // 只刷新年限显示，避免整块重绘导致输入框失焦
+      const cell = div.querySelector('.dep-years');
+      if (cell) cell.textContent = depYears(entry) + ' 年';
     });
-    div.querySelector('.dep-guardians-input').addEventListener('change', e => {
+    div.querySelector('.dep-sup-input').addEventListener('input', e => {
       const rid = parseInt(e.target.dataset.id);
       const entry = dependents.find(x => x.id === rid);
-      if (entry) entry.guardians = parseInt(e.target.value) || 0;
+      if (entry) entry.supporters = Math.max(1, parseInt(e.target.value) || 1);
     });
   });
 }
 
-// ── 死亡赔偿年限动态显示 ──
-function updateDeathYears() {
-  const age = parseInt(document.getElementById('victimAge').value) || 0;
-  const years = calcDeathYears(age);
-  document.getElementById('deathYearsDisplay').textContent = `${years} 年（自动计算）`;
+// 被扶养人扶养年限：未成年至 18 周岁；成年无劳动能力按 20 年，60 岁以上每增一岁减一年，75 岁以上按 5 年
+function depYears(d) {
+  if (d.type === 'minor') return Math.max(0, 18 - d.age);
+  return standardYears(d.age);
 }
-document.getElementById('victimAge').addEventListener('input', updateDeathYears);
 
-function calcDeathYears(age) {
+// 残疾赔偿金 / 死亡赔偿金年限
+function standardYears(age) {
   if (age < 60) return 20;
   if (age >= 75) return 5;
   return 20 - (age - 60);
 }
 
-// ── 综合伤残系数（多处伤残合并） ──
-function calcCombinedDisCoef(mainLevel, extras) {
-  if (!mainLevel || mainLevel === 0) return 0;
-  const all = [mainLevel, ...extras.map(e => e.level)].sort((a,b) => a - b);
-  let coef = DIS_COEF[all[0]];
-  for (let i = 1; i < all.length; i++) {
-    coef += DIS_COEF[all[i]] * 0.1;
+function updateYearsDisplay() {
+  const y = standardYears(gi('victimAge'));
+  $('deathYearsDisplay').textContent = y + ' 年（按年龄自动计算）';
+}
+$('victimAge').addEventListener('input', updateYearsDisplay);
+
+// ── 伤残赔偿指数（多处伤残）──
+// 最高等级指数 + 附加指数（每处按其等级指数的 10%），附加指数合计 ≤ 10%，总指数 ≤ 100%
+function calcDisIndex(mainLevel, extras) {
+  if (!mainLevel) return 0;
+  const all = [mainLevel].concat(extras.map(e => e.level)).sort((a, b) => a - b);
+  const base = DIS_COEF[all[0]];
+  let extra = 0;
+  for (let i = 1; i < all.length; i++) extra += DIS_COEF[all[i]] * 0.1;
+  extra = Math.min(extra, 0.1);
+  return Math.min(base + extra, 1.0);
+}
+
+// ── 被扶养人生活费：逐年累加，每一年度总额不超过人均消费支出 ──
+function calcDependentFee(consumption, disIndex) {
+  if (dependents.length === 0) return { total: 0, capped: false, detail: [] };
+  const items = dependents.map(d => ({
+    years: depYears(d),
+    annual: consumption * disIndex / Math.max(1, d.supporters)
+  }));
+  const maxYears = Math.max.apply(null, items.map(i => i.years));
+  const yearCap = consumption;
+  let total = 0, capped = false;
+  for (let y = 1; y <= maxYears; y++) {
+    let sum = 0;
+    items.forEach(i => { if (i.years >= y) sum += i.annual; });
+    if (sum > yearCap) { sum = yearCap; capped = true; }
+    total += sum;
   }
-  return Math.min(coef, 1.0);
+  return { total: total, capped: capped, detail: items };
 }
 
-// ── 数字格式化 ──
+// ── 格式化 ──
 function fmt(n) {
-  if (n === 0) return '0.00';
-  return n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (Math.round(n * 100) / 100).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-function fmtItem(label, amount, sub) {
-  const cls = sub ? 'result-item sub' : 'result-item';
-  const amtCls = amount === 0 ? 'result-amount zero' : 'result-amount';
-  return `<div class="${cls}">
-    <span class="result-label">${label}</span>
-    <span class="${amtCls}">¥ ${fmt(amount)}</span>
-  </div>`;
+function item(label, amount, sub) {
+  return '<div class="result-item' + (sub ? ' sub' : '') + '">' +
+    '<span class="result-label">' + label + '</span>' +
+    '<span class="result-amount' + (amount === 0 ? ' zero' : '') + '">¥ ' + fmt(amount) + '</span></div>';
+}
+function insLine(label, amount, neg) {
+  return '<div class="result-ins"><span class="label">' + label + '</span>' +
+    '<span class="amount' + (neg ? ' neg' : '') + '">' + (typeof amount === 'string' ? amount : '¥ ' + fmt(amount)) + '</span></div>';
 }
 
-// ── 主计算逻辑 ──
-document.getElementById('calcBtn').addEventListener('click', calculate);
-
-function g(id) { return parseFloat(document.getElementById(id).value) || 0; }
-function gi(id) { return parseInt(document.getElementById(id).value) || 0; }
+// ── 主计算 ──
+$('calcBtn').addEventListener('click', calculate);
 
 function calculate() {
-  const stats = {
-    urbanIncome: g('urbanIncome') || DEFAULT_STATS.urbanIncome,
-    ruralIncome: g('ruralIncome') || DEFAULT_STATS.ruralIncome,
-    urbanConsumption: g('urbanConsumption') || DEFAULT_STATS.urbanConsumption,
-    ruralConsumption: g('ruralConsumption') || DEFAULT_STATS.ruralConsumption,
-    dailyWage: g('dailyWage') || DEFAULT_STATS.dailyWage
-  };
-  const perCapitaIncome = residence === 'urban' ? stats.urbanIncome : stats.ruralIncome;
-  const perCapitaConsumption = residence === 'urban' ? stats.urbanConsumption : stats.ruralConsumption;
+  const income = g('urbanIncome');
+  const consumption = g('urbanConsumption');
+  const staffWage = g('staffWage');
+  const privateWage = g('privateWage');
   const age = gi('victimAge');
-  const monthlyIncome = g('monthlyIncome');
-  const dailyIncomeFromMonthly = monthlyIncome > 0 ? monthlyIncome / 30 : 0;
+  const years = standardYears(age);
 
-  // 1. 医疗费
+  // 1 医疗类
   const medicalFee = g('medicalFee');
   const futureMedical = g('futureMedical');
-
-  // 2. 住院伙食补助费
   const hospitalDays = gi('hospitalDays');
-  const mealSubsidy = g('mealSubsidy');
-  const hospitalMeal = hospitalDays * mealSubsidy;
-
-  // 3. 营养费
+  const mealRate = g('mealSubsidy');
+  const hospitalMeal = hospitalDays * mealRate;
   const nutritionDays = gi('nutritionDays');
   const nutritionRate = g('nutritionRate');
   const nutritionFee = nutritionDays * nutritionRate;
+  const aidFee = g('aidFee');
 
-  // 4. 护理费
-  const nursingDays = gi('nursingDays');
-  let nursingRateVal;
-  if (nursingType === 'refer') {
-    nursingRateVal = stats.dailyWage;
-  } else {
-    nursingRateVal = g('nursingRate') || stats.dailyWage;
-  }
-  const nursingFee = nursingDays * nursingRateVal;
+  // 2 护理费
+  const nurseIn = gi('nurseInDays') * Math.max(1, gi('nurseInCount')) * g('nurseInRate');
+  const nurseOut = gi('nurseOutDays') * g('nurseOutRate');
+  const afterCarePct = parseFloat($('afterCareLevel').value) || 0;
+  const afterCareYears = afterCarePct > 0 ? Math.min(20, g('afterCareYears')) : 0;
+  const afterCare = staffWage * afterCarePct * afterCareYears;
+  const nursingFee = nurseIn + nurseOut + afterCare;
 
-  // 5. 误工费
+  // 3 误工费
   const lostWorkDays = gi('lostWorkDays');
   let lostWorkRate;
   if (lostWorkType === 'monthly') {
-    lostWorkRate = dailyIncomeFromMonthly > 0 ? dailyIncomeFromMonthly : stats.dailyWage;
+    const m = g('monthlyIncome');
+    lostWorkRate = m > 0 ? m / 30 : privateWage / 365;
   } else if (lostWorkType === 'refer') {
-    lostWorkRate = stats.dailyWage;
+    lostWorkRate = privateWage / 365;
   } else {
-    lostWorkRate = g('lostWorkRate') || stats.dailyWage;
+    lostWorkRate = g('lostWorkRate');
   }
   const lostWorkFee = lostWorkDays * lostWorkRate;
 
-  // 6. 辅助器具费
-  const aidFee = g('aidFee');
+  // 4 伤残 / 死亡
+  let disIndex = 0, mainLevel = 0, disabilityComp = 0, deathComp = 0, funeralFee = 0, spiritual = 0;
+  if (caseType === 'injury') {
+    mainLevel = parseInt($('disabilityLevel').value) || 0;
+    disIndex = calcDisIndex(mainLevel, extraDisabilities);
+    disabilityComp = income * years * disIndex;
+    spiritual = g('spiritualDamage');
+  } else {
+    disIndex = 1;
+    deathComp = income * years;
+    funeralFee = g('funeralFee');
+    spiritual = g('spiritualDamageDeath');
+  }
 
-  // 7. 交通费、住宿费
+  // 5 被扶养人生活费
+  const dep = calcDependentFee(consumption, caseType === 'injury' ? disIndex : 1);
+  const depFee = dep.total;
+
+  // 6 其他费用
   const transportFee = g('transportFee');
   const accommodationFee = g('accommodationFee');
+  const appraisalFee = g('appraisalFee');
+  const repairFee = g('repairFee');
+  const otherProperty = g('propertyLoss');
+  const propertyTotal = repairFee + otherProperty;
 
-  // 8. 财产损失
-  const propertyLoss = g('propertyLoss');
+  // ── 交强险三个分项的损失归集 ──
+  const bucketMedical = medicalFee + futureMedical + hospitalMeal + nutritionFee;
+  const bucketDeath = nursingFee + lostWorkFee + aidFee + transportFee + accommodationFee +
+                      disabilityComp + deathComp + funeralFee + depFee + spiritual;
+  const bucketProperty = propertyTotal;
 
-  // ── 人身伤亡项目 ──
-  let disabilityComp = 0;
-  let deathComp = 0;
-  let funeralFee = 0;
-  let spiritualDamage = 0;
-  let depLivingFee = 0;
-  let mainDisLevel = 0;
-  let combinedCoef = 0;
+  const personalTotal = bucketMedical + bucketDeath;
+  const grandTotal = personalTotal + bucketProperty + appraisalFee;
 
-  if (caseType === 'injury') {
-    mainDisLevel = parseInt(document.getElementById('disabilityLevel').value) || 0;
-    if (mainDisLevel > 0) {
-      combinedCoef = calcCombinedDisCoef(mainDisLevel, extraDisabilities);
-      const disYears = calcDeathYears(age); // 同样的年限规则
-      disabilityComp = perCapitaIncome * disYears * combinedCoef;
-    }
-    spiritualDamage = g('spiritualDamage');
-  } else {
-    const deathYears = calcDeathYears(age);
-    deathComp = perCapitaIncome * deathYears;
-    funeralFee = g('funeralFee');
-    spiritualDamage = g('spiritualDamageDeath');
-  }
-
-  // 9. 被扶养人生活费
-  dependents.forEach(d => {
-    let years;
-    if (d.type === 'minor') {
-      years = Math.max(0, 18 - d.age);
-    } else {
-      years = 20; // 无劳动能力按20年
-    }
-    // 每个被扶养人由多人扶养时按比例分担
-    const share = 1 / (d.guardians + 1);
-    // 每年每人生活费 = 人均消费支出 × 份额
-    const annual = perCapitaConsumption * share;
-    // 残疾的被扶养人生活费不超过残疾赔偿金（按伤残等级比例）；死亡不限
-    let depYearsMax = years;
-    if (caseType === 'injury' && mainDisLevel > 0) {
-      depYearsMax = Math.min(years, 20);
-    }
-    depLivingFee += annual * depYearsMax;
-  });
-
-  // ── 合计 ──
-  const subtotal =
-    medicalFee + futureMedical + hospitalMeal + nutritionFee +
-    nursingFee + lostWorkFee + aidFee + transportFee + accommodationFee +
-    disabilityComp + deathComp + funeralFee + depLivingFee + spiritualDamage +
-    propertyLoss;
-
-  // ── 责任比例 ──
-  const liabilityRatio = Math.min(100, Math.max(0, g('liabilityRatio'))) / 100;
-  const afterLiability = subtotal * liabilityRatio;
-
-  // ── 交强险（从全额损失计算，不乘责任比例） ──
-  let ctplDeathPaid = 0, ctplMedicalPaid = 0, ctplPropertyPaid = 0;
-  let ctplTotal = 0;
+  // ── 交强险赔付（限额内不区分责任比例；死亡伤残项优先赔付精神损害抚慰金）──
+  const ratio = Math.min(100, Math.max(0, g('liabilityRatio'))) / 100;
+  const copies = ctplHas ? Math.max(1, gi('ctplCount')) : 0;
+  let ctplMed = 0, ctplDeath = 0, ctplProp = 0, ctplSpiritualPart = 0;
   if (ctplHas) {
-    const limits = CTPL[ctplLiability];
-    // 医疗费用限额：仅含直接医疗费（挂号、治疗、药费等）
-    const ctplMedSource = medicalFee + futureMedical;
-    ctplMedicalPaid = Math.min(ctplMedSource, limits.medical);
-    // 死亡/伤残限额：其余所有人身损害项目（护理费、误工费、伙食补助、营养费、辅助器具等均归此桶）
-    const ctplDeathSource = hospitalMeal + nutritionFee + nursingFee + lostWorkFee +
-                            aidFee + transportFee + accommodationFee +
-                            disabilityComp + deathComp + funeralFee +
-                            depLivingFee + spiritualDamage;
-    ctplDeathPaid = Math.min(ctplDeathSource, limits.death);
-    // 财产损失限额
-    ctplPropertyPaid = Math.min(propertyLoss, limits.property);
-    ctplTotal = ctplDeathPaid + ctplMedicalPaid + ctplPropertyPaid;
+    const lim = CTPL[ctplLiability];
+    ctplMed = Math.min(bucketMedical, lim.medical * copies);
+    const deathLimit = lim.death * copies;
+    ctplSpiritualPart = Math.min(spiritual, deathLimit);
+    ctplDeath = Math.min(bucketDeath, deathLimit);
+    ctplProp = Math.min(bucketProperty, lim.property * copies);
   }
+  const ctplTotal = ctplMed + ctplDeath + ctplProp;
 
-  // ── 商业险（覆盖"扣除交强险后×责任比例"的被告份额） ──
+  // ── 超出交强险部分按责任比例分担 ──
+  const remainder = Math.max(0, personalTotal + bucketProperty - ctplTotal);
+  const tortShare = remainder * ratio;
+
+  // 剩余未获交强险赔付的精神损害抚慰金（商业险默认不赔）
+  const spiritualLeft = Math.max(0, spiritual - ctplSpiritualPart);
+  const spiritualInShare = spiritualLeft * ratio;
+  const coversSpiritual = $('commercialCoversSpiritual').checked;
+  const commercialBase = coversSpiritual ? tortShare : Math.max(0, tortShare - spiritualInShare);
+
   const commercialLimit = g('commercialInsLimit');
-  const defLiability = Math.max(0, subtotal - ctplTotal) * liabilityRatio;
-  let commercialPaid = 0;
+  const commercialPaid = commercialLimit > 0 ? Math.min(commercialBase, commercialLimit) : 0;
+
+  const appraisalShare = appraisalFee * ratio;
+  const defendantOwes = Math.max(0, tortShare - commercialPaid) + appraisalShare;
+  const victimGets = ctplTotal + commercialPaid + Math.max(0, tortShare - commercialPaid) + appraisalShare;
+
+  // ── 渲染：明细 ──
+  let h = '';
+  if (medicalFee) h += item('医疗费', medicalFee);
+  if (futureMedical) h += item('后续治疗费', futureMedical);
+  if (hospitalMeal) h += item('住院伙食补助费（' + hospitalDays + '天 × ' + fmt(mealRate) + '元）', hospitalMeal);
+  if (nutritionFee) h += item('营养费（' + nutritionDays + '天 × ' + fmt(nutritionRate) + '元）', nutritionFee);
+  if (nursingFee) {
+    h += item('护理费', nursingFee);
+    if (nurseIn) h += item('住院护理（' + gi('nurseInDays') + '天 × ' + Math.max(1, gi('nurseInCount')) + '人 × ' + fmt(g('nurseInRate')) + '元）', nurseIn, true);
+    if (nurseOut) h += item('院外护理（' + gi('nurseOutDays') + '天 × ' + fmt(g('nurseOutRate')) + '元）', nurseOut, true);
+    if (afterCare) h += item('定残后护理（' + fmt(staffWage) + '元/年 × ' + (afterCarePct * 100) + '% × ' + afterCareYears + '年）', afterCare, true);
+  }
+  if (lostWorkFee) h += item('误工费（' + lostWorkDays + '天 × ' + fmt(lostWorkRate) + '元/天）', lostWorkFee);
+  if (aidFee) h += item('残疾辅助器具费', aidFee);
+  if (disabilityComp) h += item('残疾赔偿金（' + fmt(income) + '元/年 × ' + years + '年 × ' + (Math.round(disIndex * 1000) / 10) + '%）', disabilityComp);
+  if (deathComp) h += item('死亡赔偿金（' + fmt(income) + '元/年 × ' + years + '年）', deathComp);
+  if (funeralFee) h += item('丧葬费', funeralFee);
+  if (depFee) h += item('被扶养人生活费（' + dependents.length + '人' + (dep.capped ? '，已按年度封顶' : '') + '）', depFee);
+  if (spiritual) h += item('精神损害抚慰金', spiritual);
+  if (transportFee) h += item('交通费', transportFee);
+  if (accommodationFee) h += item('住宿费', accommodationFee);
+  if (repairFee) h += item('车辆维修及施救费', repairFee);
+  if (otherProperty) h += item('其他财产损失', otherProperty);
+  if (appraisalFee) h += item('鉴定费（不属交强险赔偿范围）', appraisalFee);
+  if (!h) h = '<div class="result-item"><span class="result-label">暂无输入项目</span><span class="result-amount zero">¥ 0.00</span></div>';
+  h += '<div class="result-total"><span class="label">损失合计</span><span class="amount">¥ ' + fmt(grandTotal) + '</span></div>';
+  $('resultDetail').innerHTML = h;
+
+  // ── 渲染：交强险 ──
+  let c = '';
+  if (!ctplHas) {
+    c = insLine('肇事车辆无交强险', '—', true) +
+        '<div class="step-note">未投保交强险的，投保义务人在交强险责任限额范围内与侵权人共同承担赔偿责任。</div>';
+  } else {
+    const lab = ctplLiability === 'liable' ? '有责' : '无责';
+    const lim = CTPL[ctplLiability];
+    c += '<div class="step-note">交强险' + lab + '限额 × ' + copies + ' 份：死亡伤残 ' + fmt(lim.death * copies) +
+         ' 元／医疗费用 ' + fmt(lim.medical * copies) + ' 元／财产损失 ' + fmt(lim.property * copies) + ' 元。' +
+         '交强险在限额内<b>不区分责任比例</b>先行赔付。</div>';
+    c += insLine('医疗费用项（限额 ' + fmt(lim.medical * copies) + '）', ctplMed);
+    c += insLine('死亡伤残项（限额 ' + fmt(lim.death * copies) + '）', ctplDeath);
+    c += insLine('财产损失项（限额 ' + fmt(lim.property * copies) + '）', ctplProp);
+    c += '<div class="result-total"><span class="label">交强险合计</span><span class="amount">¥ ' + fmt(ctplTotal) + '</span></div>';
+    if (spiritual > 0) {
+      c += '<div class="step-note">死亡伤残项内已优先赔付精神损害抚慰金 ' + fmt(ctplSpiritualPart) +
+           ' 元（《道交解释》被侵权人可请求优先赔偿精神损害）。</div>';
+    }
+  }
+  $('resultCtpl').innerHTML = c;
+
+  // ── 渲染：责任分担与商业险 ──
+  let s = '';
+  s += insLine('交强险赔付后余额', remainder, true);
+  s += insLine('× 侵权方责任比例 ' + Math.round(ratio * 100) + '% ＝ 侵权方应负担', tortShare, true);
   if (commercialLimit > 0) {
-    commercialPaid = Math.min(defLiability, commercialLimit);
+    if (!coversSpiritual && spiritualInShare > 0) {
+      s += '<div class="step-note">商业三者险一般不赔精神损害抚慰金，已从商业险赔付基数中剔除 ' + fmt(spiritualInShare) + ' 元。</div>';
+    }
+    s += insLine('商业三者险赔付（额度 ' + fmt(commercialLimit) + '）', commercialPaid);
+  } else {
+    s += insLine('商业三者险', '未投保', true);
   }
-
-  // ── 被告承担 ──
-  const defendantOwes = Math.max(0, defLiability - commercialPaid);
-
-  // ── 渲染结果 ──
-  const section = document.getElementById('resultSection');
-  const detail = document.getElementById('resultDetail');
-  const insurance = document.getElementById('resultInsurance');
-  const final = document.getElementById('resultFinal');
-
-  let detailHTML = '';
-  detailHTML += fmtItem('医疗费', medicalFee);
-  if (futureMedical > 0) detailHTML += fmtItem('后续治疗费', futureMedical);
-  if (hospitalMeal > 0) detailHTML += fmtItem(`住院伙食补助费（${hospitalDays}天×${mealSubsidy}元）`, hospitalMeal, true);
-  if (nutritionFee > 0) detailHTML += fmtItem(`营养费（${nutritionDays}天×${nutritionRate}元）`, nutritionFee, true);
-  if (nursingFee > 0) detailHTML += fmtItem(`护理费（${nursingDays}天×${fmt(nursingRateVal)}元）`, nursingFee, true);
-  if (lostWorkFee > 0) detailHTML += fmtItem(`误工费（${lostWorkDays}天×${fmt(lostWorkRate)}元/天）`, lostWorkFee);
-  if (aidFee > 0) detailHTML += fmtItem('辅助器具费', aidFee);
-  if (transportFee > 0) detailHTML += fmtItem('交通费', transportFee);
-  if (accommodationFee > 0) detailHTML += fmtItem('住宿费', accommodationFee);
-  if (propertyLoss > 0) detailHTML += fmtItem('财产损失', propertyLoss);
-
-  if (caseType === 'injury' && mainDisLevel > 0) {
-    const yearsUsed = calcDeathYears(age);
-    const coefPct = Math.round(combinedCoef * 100);
-    detailHTML += fmtItem(
-      `残疾赔偿金（${fmt(perCapitaIncome)}元/年×${yearsUsed}年×${coefPct}%${extraDisabilities.length>0?'，综合系数':''})`,
-      disabilityComp
-    );
+  if (appraisalFee > 0) {
+    s += insLine('鉴定费按责任比例分担', appraisalShare, true);
   }
-  if (caseType === 'death') {
-    const deathYears = calcDeathYears(age);
-    detailHTML += fmtItem(`死亡赔偿金（${fmt(perCapitaIncome)}元/年×${deathYears}年）`, deathComp);
-    if (funeralFee > 0) detailHTML += fmtItem('丧葬费', funeralFee);
-  }
+  s += '<div class="result-total"><span class="label">受害方可获赔总额</span><span class="amount">¥ ' + fmt(victimGets) + '</span></div>';
+  $('resultSplit').innerHTML = s;
 
-  if (depLivingFee > 0) detailHTML += fmtItem(`被扶养人生活费（${dependents.length}人）`, depLivingFee);
-  if (spiritualDamage > 0) detailHTML += fmtItem('精神损害抚慰金', spiritualDamage);
+  $('resultFinal').innerHTML =
+    '<span class="label">侵权人（被告）自行承担</span><span class="amount">¥ ' + fmt(defendantOwes) + '</span>';
 
-  detailHTML += `<div class="result-total">
-    <span class="label">赔偿合计</span>
-    <span class="amount">¥ ${fmt(subtotal)}</span>
-  </div>`;
+  // ── 复制文本 ──
+  const lines = [];
+  lines.push('交通事故赔偿测算（深圳 · 广东省' + ($('statsLabel').textContent) + '）');
+  lines.push('');
+  lines.push('【损失合计】' + fmt(grandTotal) + ' 元');
+  if (ctplHas) lines.push('【交强险赔付】' + fmt(ctplTotal) + ' 元');
+  lines.push('【交强险后余额】' + fmt(remainder) + ' 元 × 责任比例 ' + Math.round(ratio * 100) + '% ＝ ' + fmt(tortShare) + ' 元');
+  if (commercialLimit > 0) lines.push('【商业三者险赔付】' + fmt(commercialPaid) + ' 元');
+  if (appraisalFee > 0) lines.push('【鉴定费分担】' + fmt(appraisalShare) + ' 元');
+  lines.push('【侵权人自行承担】' + fmt(defendantOwes) + ' 元');
+  lines.push('【受害方可获赔总额】' + fmt(victimGets) + ' 元');
+  lines.push('');
+  lines.push('本测算仅供参考，不构成法律意见。');
+  lastSummary = lines.join('\n');
 
-  if (liabilityRatio < 1 && ctplTotal < subtotal) {
-    detailHTML += `<div class="result-ins">
-      <span class="label">扣除交强险后余额 × ${Math.round(liabilityRatio*100)}% 责任比例</span>
-      <span class="amount">¥ ${fmt(defLiability)}</span>
-    </div>`;
-  }
-
-  detail.innerHTML = detailHTML;
-
-  let insHTML = '';
-  if (ctplHas) {
-    const label = ctplLiability === 'liable' ? '有责' : '无责';
-    if (ctplDeathPaid > 0) insHTML += `<div class="result-ins"><span class="label">交强险（${label}）— 死亡/伤残项</span><span class="amount">¥ ${fmt(ctplDeathPaid)}</span></div>`;
-    if (ctplMedicalPaid > 0) insHTML += `<div class="result-ins"><span class="label">交强险（${label}）— 医疗费用项</span><span class="amount">¥ ${fmt(ctplMedicalPaid)}</span></div>`;
-    if (ctplPropertyPaid > 0) insHTML += `<div class="result-ins"><span class="label">交强险（${label}）— 财产损失项</span><span class="amount">¥ ${fmt(ctplPropertyPaid)}</span></div>`;
-    if (ctplTotal === 0) insHTML += `<div class="result-ins"><span class="label">交强险赔付</span><span class="amount neg">¥ 0.00</span></div>`;
-  }
-  if (commercialPaid > 0) {
-    insHTML += `<div class="result-ins"><span class="label">商业三者险赔付</span><span class="amount">¥ ${fmt(commercialPaid)}</span></div>`;
-  }
-  if (!insHTML) {
-    insHTML = `<div class="result-ins"><span class="label">无保险赔付</span><span class="amount neg">—</span></div>`;
-  }
-  insurance.innerHTML = insHTML;
-
-  final.innerHTML = `<span class="label">被告应承担金额</span><span class="amount">¥ ${fmt(defendantOwes)}</span>`;
-
+  const section = $('resultSection');
   section.classList.add('show');
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── 复制 ──
+$('copyBtn').addEventListener('click', async () => {
+  const btn = $('copyBtn');
+  try {
+    await navigator.clipboard.writeText(lastSummary);
+    btn.textContent = '已复制 ✓';
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = lastSummary;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); btn.textContent = '已复制 ✓'; }
+    catch (e2) { btn.textContent = '复制失败，请手动选择'; }
+    document.body.removeChild(ta);
+  }
+  setTimeout(() => { btn.textContent = '复制计算清单'; }, 1800);
+});
+
+// ── 初始化 ──
+applyStatsYear(DEFAULT_YEAR);
+updateYearsDisplay();
+
+// ── Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
 }
 </script>
 </body>
