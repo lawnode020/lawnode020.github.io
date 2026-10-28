@@ -45,6 +45,12 @@ window.TOOLS = [
     icon: '<circle cx="12" cy="12" r="8.5"/><path d="M9.5 8.5l2.5 3.5 2.5-3.5M12 12v4.5M9.8 13.2h4.4"/>'
   },
   {
+    name: '身份证合成',
+    desc: '正反面照片自动拉正 · 排版到一页',
+    url: 'https://lawnode020.github.io/idcard/',
+    icon: '<rect x="3" y="5.5" width="18" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 15.8c.6-1.4 1.7-2.1 3-2.1s2.4.7 3 2.1M14 9.5h4M14 12.5h4"/>'
+  },
+  {
     name: '长截图裁剪',
     desc: '证据打印分页',
     url: 'https://lawnode020.github.io/caijian/',
