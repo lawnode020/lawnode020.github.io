@@ -13,6 +13,7 @@
 | 加班费计算器 | 工作日 / 休息日 / 法定假 | [overtime-pay-calculator](https://github.com/lawnode020/overtime-pay-calculator) 仓库 |
 | 工伤赔偿计算器 | 深圳 · 伤残1-10级及治疗期待遇 | 本仓库 `gongshang/` |
 | 工资计算器 | 五险一金、个税（累计预扣）、到手工资 | 本仓库 `gongzi/` |
+| 文件扫描 | 签字文件拍照，自动找纸边、拉正、去阴影，多页合成 PDF | 本仓库 `scan/` |
 | 身份证合成 | 正反面照片自动找角拉正、排版到一页 | 本仓库 `idcard/` |
 | 长截图裁剪 | 证据打印分页 | [caijian](https://github.com/lawnode020/caijian) 仓库 |
 | 便签 | 轻量记录 | [bianqian](https://github.com/lawnode020/bianqian) 仓库 |
@@ -28,6 +29,7 @@ case-manager/                                  案件管理（在办案件台账
 gongshang/                                     工伤赔偿计算器
 gongzi/                                        工资计算器（五险一金与个税）
 accident/                                      交通事故赔偿计算器
+scan/                                          文件扫描（多页拍照 → A4 PDF）
 idcard/                                        身份证合成（正反面拉正、排版）
 pgh/                                           彭高红版首页（共用 tools.js 工具清单）
 ```

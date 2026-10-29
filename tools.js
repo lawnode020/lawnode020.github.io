@@ -45,6 +45,12 @@ window.TOOLS = [
     icon: '<circle cx="12" cy="12" r="8.5"/><path d="M9.5 8.5l2.5 3.5 2.5-3.5M12 12v4.5M9.8 13.2h4.4"/>'
   },
   {
+    name: '文件扫描',
+    desc: '签字文件拍照 · 自动拉正 · 合成 PDF',
+    url: 'https://lawnode020.github.io/scan/',
+    icon: '<path d="M7 3.5H4.5a1 1 0 0 0-1 1V7M17 3.5h2.5a1 1 0 0 1 1 1V7M7 20.5H4.5a1 1 0 0 1-1-1V17M17 20.5h2.5a1 1 0 0 0 1-1V17"/><path d="M8 7.5h8M8 11h8M8 14.5h5"/>'
+  },
+  {
     name: '身份证合成',
     desc: '正反面照片自动拉正 · 排版到一页',
     url: 'https://lawnode020.github.io/idcard/',
